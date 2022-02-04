@@ -62,3 +62,9 @@ def get_thick_cylinder_surface_xyz(df, coil_num):
     y = np.concatenate([yo, yi[::-1], yo[:1]], axis=0)
     z = np.concatenate([zo, zi[::-1], zo[:1]], axis=0)
     return x,y,z
+
+datadir = '/home/shared_data/helicalc_params/'
+
+def load_data(filename):
+    df_raw = pd.read_pickle(datadir + f"{filename}")
+    return df_raw

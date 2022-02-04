@@ -4,6 +4,11 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import pandas as pd
 from scipy.spatial.transform import Rotation
+import dash
+from dash import Dash
+from dash.dependencies import Input, Output
+import dash_core_components as dcc
+import dash_html_components as html
 
 df = pd.read_pickle("/home/shared_data/helicalc_params/Mu2e_Coils_Conductors.pkl")
 

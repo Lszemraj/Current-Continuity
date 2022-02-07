@@ -63,16 +63,23 @@ html.Div(
    html.Div([
     html.Div([
                html.H3('Plot of Entire Selected Solenoid'),
-            dcc.Graph(id="Coil1", style={'width': '90vh', 'height': '90vh'})
+            dcc.Graph(id="Coil1")
+                      #style={'width': '90vh', 'height': '90vh'})
             ],className="six columns"),
         html.Div([
-            html.H3('Plot of Coils and Longitudinal Bars withing Z Range'),
+            html.H3('Plot of Coils and Longitudinal Bars within Z Range'),
             dcc.Graph(id="Coil2", style={'width': '90vh', 'height': '90vh'})
         ], className="six columns"), ], className="row" ),
 
 
 
 ])
+
+camera = dict(
+    up = dict(x=0, y=1, z=0),
+    center = dict(x=0, y=0, z=0),
+    eye = dict(x=-2, y=1.25, z=-1.25)
+)
 
 
 @app.callback(
@@ -96,13 +103,16 @@ def update_output(input_solenoid):
         x, y, z = get_thick_cylinder_surface_xyz(df_raw, num)
 
         cyl.add_traces(data=go.Surface(x=x, y=y, z=z,
+                                       surfacecolor = np.ones_like(x),
+                                       colorscale = [[0, 'red'], [1, 'red']],
                                        showscale=False,
                                        showlegend=False,
                                        name='Coils (radial center)',
-                                       colorscale= 'viridis'
                                        ))
 
-    cyl.update_layout(title=f'{solenoid} Coils', autosize=True
+    cyl.update_layout(title=f'{solenoid} Coils',
+                      scene = dict(aspectmode = 'data', camera = camera),
+                      autosize = False, width = 1600, height = 800
                       )
     return cyl
 
@@ -126,13 +136,14 @@ def update_coils(start_z_selected, end_z_selected):
         x, y, z = get_thick_cylinder_surface_xyz(df_raw, num)
 
         cyl2.add_traces(data=go.Surface(x=x, y=y, z=z,
+                                        surfacecolor=np.ones_like(x),
+                                        colorscale=[[0, 'red'], [1, 'red']],
                                        showscale=False,
                                        showlegend=False,
                                        name='Coils (radial center)',
-                                       colorscale='viridis'
                                        ))
     for i in idx:
-        z_start = df_bars['y0'].iloc[i]
+        z_start = df_bars['z0'].iloc[i]
         z_end = df_bars['z0'].iloc[i] + df_bars['length'].iloc[i]
         z_values = np.arange(z_start, z_end)
 
@@ -152,7 +163,9 @@ def update_coils(start_z_selected, end_z_selected):
                 width=2
             )
         ))
-    cyl2.update_layout(title= f'DS Coils and Longitudinal Bars from Z range {start_z_selected} to {end_z_selected}', autosize=True
+    cyl2.update_layout(title= f'DS Coils and Longitudinal Bars from Z range {start_z_selected} to {end_z_selected}',
+                       scene=dict(aspectmode='data', camera=camera),
+                       autosize=False, width=1600, height=800
                       )
     return cyl2
 

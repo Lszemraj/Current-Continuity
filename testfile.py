@@ -15,13 +15,13 @@ input_solenoid = 'DS'
 
 df_raw = load_data("Mu2e_Coils_Conductors.pkl")
 solenoid = input_solenoid
-print(df_raw.columns)
+#print(df_raw.columns)
 in_solenoid = df_raw.loc[df_raw['Solenoid'] == solenoid]
-print(in_solenoid)
-print(df_raw['z'].iloc[55], df_raw['z'].iloc[65])
+#print(in_solenoid)
+#print(df_raw['z'].iloc[55], df_raw['z'].iloc[65])
 num_first = in_solenoid["Coil_Num"].iloc[0]
 num_last = in_solenoid["Coil_Num"].iloc[-1]
-print(num_first, num_last)
+#print(num_first, num_last)
 
 cyl = go.Figure()
 
@@ -41,10 +41,10 @@ cyl.update_layout(title=f'{solenoid} Coils', autosize=True
 #cyl.show()
 
 df_bars = pd.read_csv(datadir + "Mu2e_Longitudinal_Bars_V13.csv")
-print(df_bars)
+#print(df_bars)
 
 
-print(df_bars.columns)
+#print(df_bars.columns)
 
 z_start = df_bars['y0'].iloc[0]
 z_end =  df_bars['z0'].iloc[2] + df_bars['length'].iloc[2]
@@ -54,8 +54,8 @@ num = len(z_values)
 x_values = [df_bars['x0'].iloc[2]]*num
 
 y_values = [df_bars['y0'].iloc[2]]*num
-print(df_bars['z0'].iloc[0], df_bars['z0'].iloc[-1])
-print(df_bars['length'][:])
+#print(df_bars['z0'].iloc[0], df_bars['z0'].iloc[-1])
+#print(df_bars['length'][:])
 bars_fig = go.Figure(data=go.Scatter3d(
     x= x_values, y= y_values, z=z_values,
     marker=dict(
@@ -73,18 +73,18 @@ bars_fig = go.Figure(data=go.Scatter3d(
 
 df_bars = pd.read_csv(datadir + "Mu2e_Longitudinal_Bars_V13.csv")
 dff = df_bars.assign(ending_z =  df_bars['z0'] + df_bars['length'])
-print(dff)
+#print(dff)
 
 end_z_selected = 13.64073
 start_z_selected = 3.74888
 coils = df_raw.query(f'z < {end_z_selected} and z >= {start_z_selected}')
 bars = dff.query(f'z0 < {end_z_selected} and z0 >= {start_z_selected}')
-print(coils)
-print(bars)
+#print(coils)
+#print(bars)
 index = bars.index
-print(index)
+#print(index)
 idx = index.tolist()
-print(idx)
+#print(idx)
 cyl2 = go.Figure()
 
 for i in idx:
@@ -108,3 +108,56 @@ for i in idx:
             width=2
         )
     ))
+
+print(df_bars)
+print(df_bars.columns)
+print(df_bars['x0'].iloc[1])
+i=15
+x0 = df_bars['x0'].iloc[i]
+y0 = df_bars['y0'].iloc[i]
+z0 = df_bars['z0'].iloc[i]
+zf = x0 = df_bars['z0'].iloc[i] + df_bars['length'].iloc[i]
+width =  df_bars['W'].iloc[i]
+W2 = width/2
+print("width", width)
+
+xc = [x0 + W2, x0 + W2, x0-W2, x0-W2, x0 + W2, x0 + W2, x0-W2, x0-W2]
+yc = [y0 + W2, y0 + W2, y0-W2, y0-W2, y0 + W2, y0 + W2, y0-W2, y0-W2]
+zc = [z0, z0, z0, z0, zf, zf, zf, zf]
+'''
+fig = go.Figure(data=[
+     go.Scatter3d(x=x, y=y, z=z,
+                  mode='markers',
+                  marker=dict(size=2)
+                 ),
+     go.Mesh3d(
+        # 8 vertices of a cube
+        x=xc,
+        y=yc,
+        z=zc,
+
+        alphahull = 0,
+        opacity=0.6,
+        color='#DC143C',
+        flatshading = True
+    )
+    ])
+'''
+
+df_bars = pd.read_csv(datadir + "Mu2e_Longitudinal_Bars_V13.csv")
+i=15
+x0 = df_bars['x0'].iloc[i]
+y0 = df_bars['y0'].iloc[i]
+z0 = df_bars['z0'].iloc[i]
+zf = x0 = df_bars['z0'].iloc[i] + df_bars['length'].iloc[i]
+width =  df_bars['W'].iloc[i]
+W2 = width/2
+print("width", width)
+
+xc = [x0 + W2, x0 + W2, x0-W2, x0-W2, x0 + W2, x0 + W2, x0-W2, x0-W2]
+yc = [y0 + W2, y0 + W2, y0-W2, y0-W2, y0 + W2, y0 + W2, y0-W2, y0-W2]
+zc = [z0, z0, z0, z0, zf, zf, zf, zf]
+
+fig = go.Figure(data =
+                go.Mesh3d(x=xc,y=yc,z=zc, alphahull = 0, intensity = np.linspace(1, 1, 8, endpoint=True),name='y'))
+fig.show()

@@ -68,3 +68,36 @@ datadir = '/home/shared_data/helicalc_params/'
 def load_data(filename):
     df_raw = pd.read_pickle(datadir + f"{filename}")
     return df_raw
+
+geom_df_mu2e = load_data("Mu2e_Coils_Conductors.pkl")
+
+def get_many_thick_cylinders(df):
+    # lists to store all cylinder information (will become multi-dim np.arrays)
+    xs = []
+    ys = []
+    zs = []
+    cs = []
+    # loop through all coils, by coil number
+    for cn in df.Coil_Num:
+        # get x,y,z for this cylinder
+        x_, y_, z_ = get_thick_cylinder_surface_xyz(geom_df_mu2e, cn)  # inner and outer walls
+        # pad x_, y_, z_ for transparency between coils
+        x_ = np.insert(np.insert(x_, 0, x_[0], axis=0), -1, x_[-1], axis=0)
+        y_ = np.insert(np.insert(y_, 0, y_[0], axis=0), -1, y_[-1], axis=0)
+        z_ = np.insert(np.insert(z_, 0, z_[0], axis=0), -1, z_[-1], axis=0)
+        # color array, with padded x,y,z flipped to zero (will set transparent)
+        cs_ = np.ones_like(x_)
+        cs_[0, :] = 0
+        cs_[-1, :] = 0
+        # add to lists
+        xs.append(x_)
+        ys.append(y_)
+        zs.append(z_)
+        cs.append(cs_)
+    # create numpy arrays from gathered results
+    xs = np.concatenate(xs)
+    ys = np.concatenate(ys)
+    zs = np.concatenate(zs)
+    cs = np.concatenate(cs)
+
+    return xs, ys, zs, cs

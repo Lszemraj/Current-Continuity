@@ -12,8 +12,11 @@ import dash_html_components as html
 from dash import dash_table
 
 df_bars = pd.read_csv(datadir + "Mu2e_Longitudinal_Bars_V13.csv")
-dff = df_bars.assign(ending_z =  df_bars['z0'] + df_bars['length'])
+#dff = df_bars.assign(ending_z =  df_bars['z0'] + df_bars['length'])
 df_raw = load_data("Mu2e_Coils_Conductors.pkl")
+
+df_coils = df_raw[['Coil_Num', 'L', 'x', 'y', 'z']].iloc[55:]
+
 #Camera Angle
 ...
 camera = dict(
@@ -22,7 +25,10 @@ camera = dict(
     eye = dict(x=-2, y=1.25, z=-1.25)
 )
 ...
-
+d_columns = [
+    {"name": "Coil_Num",
+     "id": "Coil Num"}
+]
 
 #Dash App config
 app = dash.Dash(__name__)
@@ -31,104 +37,22 @@ app = dash.Dash(__name__)
 app.layout = html.Div([
 html.Div(children=[html.Div([
         html.H1(children = 'Current Continuity')])]),
+html.H2(children = 'Datatable of Detector Solenoid Coils'),
+        dash_table.DataTable(data = df_coils.to_dict('records'),
+                             columns = [{"name": i, "id": i} for i in df_coils.columns]),
 
-html.Div([     #html.H3(children = 'Hall Probe Status Datatable'),
-        dash_table.DataTable(
-        id='table',
-        #data= data,
-        columns=[{"name": i, "id": i, "type": 'numeric'} for i in df_raw.columns],
-        sort_action='native',
-        editable=True,),
-            '''
-        style_data_conditional=[
-             {
-                 'if': {
-                     'column_id': 'Probe_Name',
-                     'filter_query' : "{Probe_Name} eq 'SP1'",
 
-                 },
-                 'backgroundColor': 'green',
-                 'color': 'white'
-             },
-            {
-                'if': {
-                    'column_id': 'Probe_Name',
-                    'filter_query': "{Probe_Name} eq 'SP2'",
-
-                },
-                'backgroundColor': 'green',
-                'color': 'white'
-            },
-            {
-                'if': {
-                    'column_id': 'Probe_Name',
-                    'filter_query': "{Probe_Name} eq 'SP3'",
-
-                },
-                'backgroundColor': 'green',
-                'color': 'white'
-            },
-            {
-                'if': {
-                    'column_id': 'Probe_Name',
-                    'filter_query': "{Probe_Name} eq 'BP1'",
-
-                },
-                'backgroundColor': 'green',
-                'color': 'white'
-            },
-            {
-                'if': {
-                    'column_id': 'Probe_Name',
-                    'filter_query': "{Probe_Name} eq 'BP2'",
-
-                },
-                'backgroundColor': 'green',
-                'color': 'white'
-            },
-            {
-                'if': {
-                    'column_id': 'Probe_Name',
-                    'filter_query': "{Probe_Name} eq 'BP3'",
-
-                },
-                'backgroundColor': 'green',
-                'color': 'white'
-            },
-            {
-                'if': {
-                    'column_id': 'Probe_Name',
-                    'filter_query': "{Probe_Name} eq 'BP4'",
-
-                },
-                'backgroundColor': 'green',
-                'color': 'white'
-            },
-            {
-                'if': {
-                    'column_id': 'Probe_Name',
-                    'filter_query': "{Probe_Name} eq 'BP5'",
-
-                },
-                'backgroundColor': 'green',
-                'color': 'white'
-            }
-        ]
-
-        ),]
-        '''
-        ]),
 html.Div(
     [
-        html.I("Input starting and ending Z to plot [must be within 3.74888 and 13.64073] "),
+        html.H3("Input starting and ending Z to plot [must be within 3.74888 and 13.7] "),
         html.Br(),
-        dcc.Input(id="input1", type="number", placeholder="", style={'marginRight':'10px'}, value = 3.74888 ),
-        dcc.Input(id="input2", type="number", placeholder="", value = 13.64073, debounce=True),
+        dcc.Input(id="input1", type="number", placeholder="", style={'marginRight':'10px'}, value = 3.7 ),
+        dcc.Input(id="input2", type="number", placeholder="", value = 13.7, debounce=True),
         html.Div(id="output"),
     ]
 ),
         html.Div([
-            html.H3('Plot of Coils and Longitudinal Bars within Z Range'),
+            html.H2('Plot of Coils and Longitudinal Bars within Z Range'),
             dcc.Graph(id="Coil2", style={'width': '90vh', 'height': '90vh'})
         ])
 
@@ -146,17 +70,20 @@ html.Div(
 def update_coils(start_z_selected, end_z_selected):
     df_raw = load_data("Mu2e_Coils_Conductors.pkl")
 
-    coils = df_raw.query(f'z < {end_z_selected} and z >= {start_z_selected}')
-    bars = dff.query(f'z0 < {end_z_selected} and z0 >= {start_z_selected}')
+    coils = df_raw.query(f'(z < {end_z_selected}) and (z >= {start_z_selected})')
+    bars = df_bars.query(f'(z0 < {end_z_selected}) and (z0 >= {start_z_selected})')
     num_first = coils["Coil_Num"].iloc[0]
     num_last = coils["Coil_Num"].iloc[-1]
 
     cyl2 = go.Figure()
     index = bars.index
     idx = index.tolist()
-
-    for num in range(num_first, num_last):
-        x, y, z = get_thick_cylinder_surface_xyz(df_raw, num)
+    print(bars)
+    print(idx)
+    print(type(idx[0]))
+    print(bars.columns)
+    for num in range(num_first, num_last+1):
+        x, y, z = get_thick_cylinder_surface_xyz(coils, num)
 
         cyl2.add_traces(data=go.Surface(x=x, y=y, z=z,
                                         surfacecolor=np.ones_like(x),
@@ -169,7 +96,8 @@ def update_coils(start_z_selected, end_z_selected):
         xc, yc, zc = create_bar_endpoints(df_bars, i)
         cond = df_bars['cond N'].iloc[i]
         cyl2.add_traces(
-            data =  go.Mesh3d(x=xc,y=yc,z=zc, alphahull = 0, intensity = np.linspace(1, 1, 8, endpoint=True),name='y'))
+              data = go.Mesh3d(x=xc,y=yc,z=zc, alphahull = 0, intensity = np.linspace(1, 1, 8, endpoint=True),name = f'{cond}'),
+        )
 
         '''
         z_start = df_bars['z0'].iloc[i]
@@ -196,6 +124,7 @@ def update_coils(start_z_selected, end_z_selected):
         '''
     cyl2.update_layout(title= f'DS Coils and Longitudinal Bars from Z range {start_z_selected} to {end_z_selected}',
                        legend_title_text='Conductor Number',
+                       showlegend = True,
                        scene=dict(aspectmode='data', camera=camera),
                        autosize=False, width=1500, height=800
                       )
@@ -203,4 +132,13 @@ def update_coils(start_z_selected, end_z_selected):
 ...
 
 if __name__ == "__main__":
-    app.run_server(host='0.0.0.0', debug= False, port=8070)
+    app.run_server(host='0.0.0.0', debug= True, port=8070)
+
+'''
+html.Div([     #html.H3(children = 'Hall Probe Status Datatable'),
+        dash_table.DataTable(
+        id='table',
+        #data= df_raw.to_dict("records"),
+            columns = [{"name": i, "id": i, "type": 'numeric'} for i in df_raw.columns],
+            cell_selectable = False,
+'''

@@ -106,12 +106,31 @@ def create_bar_endpoints(df_bars, index):
     x0 = df_bars['x0'].iloc[index]
     y0 = df_bars['y0'].iloc[index]
     z0 = df_bars['z0'].iloc[index]
-    zf = x0 = df_bars['z0'].iloc[index] + df_bars['length'].iloc[index]
+    theta2 = df_bars["theta2"].iloc[index]
+    length = df_bars['length'].iloc[index]
+    if theta2 < 1:
+        scale = 1
+    else:
+        scale = -1
+    zf = df_bars['z0'].iloc[index] + (df_bars['length'].iloc[index])*scale
     width = df_bars['W'].iloc[index]
     Thickness = df_bars['T'].iloc[index]
     T2 = Thickness / 2
     W2 = width / 2
-    xc = [x0 + W2, x0 + W2, x0 - W2, x0 - W2, x0 + W2, x0 + W2, x0 - W2, x0 - W2]
-    yc = [y0 + T2, y0 - T2, y0 - T2, y0 + T2, y0 + T2, y0 - T2, y0 - T2, y0 + T2]
-    zc = [z0, z0, z0, z0, zf, zf, zf, zf]
-    return xc, yc, zc
+    xc = [W2, W2, -W2, -W2, W2, W2, -W2, -W2]
+    yc = [T2, -T2, -T2, T2, T2, -T2, -T2, T2]
+    zc = [-length / 2, -length / 2, -length / 2, -length / 2, length / 2, length / 2, length / 2, length / 2]
+
+    pos = np.array([xc, yc, zc])
+    phi2 = df_bars["Phi2"].iloc[index]
+    theta2 = df_bars["theta2"].iloc[index]
+    psi2 = df_bars["psi2"].iloc[index]
+    rot_angles = np.array([phi2, theta2, psi2])
+    rot = Rotation.from_euler('ZYZ', rot_angles, degrees=True)
+    pos_rot = rot.apply(pos.T)
+    X, Y, Z = pos_rot.T
+    X = X + x0
+    Y = Y + y0
+    Z = Z + z0
+
+    return X, Y, Z

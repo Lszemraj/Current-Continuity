@@ -145,13 +145,14 @@ fig = go.Figure(data=[
 '''
 
 df_bars = pd.read_csv(datadir + "Mu2e_Longitudinal_Bars_V13.csv")
-i=15
+i=0
 
 def create_bar_endpoints(df_bars, index):
     x0 = df_bars['x0'].iloc[i]
     y0 = df_bars['y0'].iloc[i]
     z0 = df_bars['z0'].iloc[i]
-    zf = x0 = df_bars['z0'].iloc[i] + df_bars['length'].iloc[i]
+    length = df_bars['length'].iloc[i]
+    zf = x0 = df_bars['z0'].iloc[i] + length
     width = df_bars['W'].iloc[i]
     Thickness = df_bars['T'].iloc[i]
     T2 = Thickness / 2
@@ -172,15 +173,40 @@ Thickness = df_bars['T'].iloc[i]
 T2 = Thickness/2
 W2 = width/2
 print("width", width)
+length = df_bars['length'].iloc[i]
 
-xc = [x0 + W2, x0 + W2, x0 - W2, x0 - W2, x0 + W2, x0 + W2, x0 - W2, x0 - W2]
-yc = [y0 + T2, y0 - T2, y0 - T2, y0 + T2, y0 + T2, y0 - T2, y0 - T2, y0 + T2]
-zc = [z0, z0, z0, z0, zf, zf, zf, zf]
+#xc = [x0 + W2, x0 + W2, x0 - W2, x0 - W2, x0 + W2, x0 + W2, x0 - W2, x0 - W2]
+#yc = [y0 + T2, y0 - T2, y0 - T2, y0 + T2, y0 + T2, y0 - T2, y0 - T2, y0 + T2]
+#zc = [z0, z0, z0, z0, zf, zf, zf, zf]
+xc = [W2,  W2, -W2, -W2, W2, W2, -W2, -W2]
+yc = [T2, -T2, -T2, T2, T2, -T2, -T2, T2]
+zc = [-length/2 , -length/2, -length/2, -length/2, length/2, length/2, length/2, length/2]
+
+pos = np.array([xc, yc, zc])
+phi2 = df_bars["Phi2"].iloc[i]
+theta2 = df_bars["theta2"].iloc[i]
+psi2 = df_bars["psi2"].iloc[i]
+rot_angles = np.array([phi2, theta2, psi2])
+rot = Rotation.from_euler('ZYZ', rot_angles, degrees=True)
+pos_rot = rot.apply(pos.T)
+X, Y, Z = pos_rot.T
+
+X = X + x0
+Y = Y + y0
+Z = Z + z0
+
+print(xc,yc,zc)
+print(X,Y,Z)
 
 fig = go.Figure(data = # go.Scatter3d(x=xc,y=yc,z=zc))
-                go.Mesh3d(x=xc,y=yc,z=zc, alphahull = 0, intensity = np.linspace(1, 1, 8, endpoint=True),name='y'))
+                go.Mesh3d(x=X,y=Y,z=Z, alphahull = 0, intensity = np.linspace(1, 1, 8, endpoint=True),name='y'))
+#go.Mesh3d(x=xc,y=yc,z=zc, alphahull = 0, intensity = np.linspace(1, 1, 8, endpoint=True),name='y')])
+
 fig.update_layout(scene = dict(aspectmode = 'data'))
 fig.show()
 
 #Considering angle rotations
 
+df_raw = load_data("Mu2e_Coils_Conductors.pkl")
+print(df_raw)
+print(df_raw.columns)

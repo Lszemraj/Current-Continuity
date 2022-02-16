@@ -11,18 +11,18 @@ import dash_core_components as dcc
 import dash_html_components as html
 
 #defining camera
-
+...
 camera = dict(
     up = dict(x=0, y=1, z=0),
     center = dict(x=0, y=0, z=0),
     eye = dict(x=-2, y=1.25, z=-1.25)
 )
-
+...
 
 
 #Dash App Config
 app = dash.Dash(__name__)
-
+...
 
 app.layout = html.Div([
 html.Div(children=[html.Div([
@@ -60,8 +60,11 @@ html.Div(
 
 
 ])
+...
 
+#App callback for coil selection
 
+...
 @app.callback(
     Output('Coil1', 'figure'),
     Input('solenoid-dropdown', 'value'))
@@ -79,7 +82,7 @@ def update_output(input_solenoid):
     cyl = go.Figure()
     xs, ys, zs, cs = get_many_thick_cylinders(df_raw.iloc[num_first:num_last])
     cyl.add_traces(data = go.Surface(x=xs, y=ys, z=zs, surfacecolor=cs,
-                     colorscale=[[0, 'blue'], [1, 'gray']],
+                     colorscale= [[0, 'rgba(0,0,0,0)'],[1, 'rgba(138, 207, 103, 1)']],
                      showscale=False,
                      showlegend=True,
                      opacity=1.0,
@@ -106,7 +109,8 @@ def update_output(input_solenoid):
                       autosize = False, width = 1600, height = 800
                       )
     '''
+...
 
-
+#Run Dash App
 if __name__ == "__main__":
     app.run_server(host='0.0.0.0', debug= False, port=8050)

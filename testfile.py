@@ -146,18 +146,41 @@ fig = go.Figure(data=[
 
 df_bars = pd.read_csv(datadir + "Mu2e_Longitudinal_Bars_V13.csv")
 i=15
+
+def create_bar_endpoints(df_bars, index):
+    x0 = df_bars['x0'].iloc[i]
+    y0 = df_bars['y0'].iloc[i]
+    z0 = df_bars['z0'].iloc[i]
+    zf = x0 = df_bars['z0'].iloc[i] + df_bars['length'].iloc[i]
+    width = df_bars['W'].iloc[i]
+    Thickness = df_bars['T'].iloc[i]
+    T2 = Thickness / 2
+    W2 = width / 2
+    xc = [x0 + W2, x0 + W2, x0 - W2, x0 - W2, x0 + W2, x0 + W2, x0 - W2, x0 - W2]
+    yc = [y0 + T2, y0 - T2, y0 - T2, y0 + T2, y0 + T2, y0 - T2, y0 - T2, y0 + T2]
+    zc = [z0, z0, z0, z0, zf, zf, zf, zf]
+    return xc, yc, zc
+
+
+
 x0 = df_bars['x0'].iloc[i]
 y0 = df_bars['y0'].iloc[i]
 z0 = df_bars['z0'].iloc[i]
 zf = x0 = df_bars['z0'].iloc[i] + df_bars['length'].iloc[i]
 width =  df_bars['W'].iloc[i]
+Thickness = df_bars['T'].iloc[i]
+T2 = Thickness/2
 W2 = width/2
 print("width", width)
 
-xc = [x0 + W2, x0 + W2, x0-W2, x0-W2, x0 + W2, x0 + W2, x0-W2, x0-W2]
-yc = [y0 + W2, y0 + W2, y0-W2, y0-W2, y0 + W2, y0 + W2, y0-W2, y0-W2]
+xc = [x0 + W2, x0 + W2, x0 - W2, x0 - W2, x0 + W2, x0 + W2, x0 - W2, x0 - W2]
+yc = [y0 + T2, y0 - T2, y0 - T2, y0 + T2, y0 + T2, y0 - T2, y0 - T2, y0 + T2]
 zc = [z0, z0, z0, z0, zf, zf, zf, zf]
 
-fig = go.Figure(data =
+fig = go.Figure(data = # go.Scatter3d(x=xc,y=yc,z=zc))
                 go.Mesh3d(x=xc,y=yc,z=zc, alphahull = 0, intensity = np.linspace(1, 1, 8, endpoint=True),name='y'))
+fig.update_layout(scene = dict(aspectmode = 'data'))
 fig.show()
+
+#Considering angle rotations
+

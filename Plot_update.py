@@ -101,3 +101,17 @@ def get_many_thick_cylinders(df):
     cs = np.concatenate(cs)
 
     return xs, ys, zs, cs
+
+def create_bar_endpoints(df_bars, index):
+    x0 = df_bars['x0'].iloc[index]
+    y0 = df_bars['y0'].iloc[index]
+    z0 = df_bars['z0'].iloc[index]
+    zf = x0 = df_bars['z0'].iloc[index] + df_bars['length'].iloc[index]
+    width = df_bars['W'].iloc[index]
+    Thickness = df_bars['T'].iloc[index]
+    T2 = Thickness / 2
+    W2 = width / 2
+    xc = [x0 + W2, x0 + W2, x0 - W2, x0 - W2, x0 + W2, x0 + W2, x0 - W2, x0 - W2]
+    yc = [y0 + T2, y0 - T2, y0 - T2, y0 + T2, y0 + T2, y0 - T2, y0 - T2, y0 + T2]
+    zc = [z0, z0, z0, z0, zf, zf, zf, zf]
+    return xc, yc, zc

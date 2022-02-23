@@ -210,3 +210,73 @@ fig.show()
 df_raw = load_data("Mu2e_Coils_Conductors.pkl")
 print(df_raw)
 print(df_raw.columns)
+
+#update coils thing
+...
+'''
+def update_coils(start_z_selected, end_z_selected):
+    df_raw = load_data("Mu2e_Coils_Conductors.pkl")
+    df_dict = load_all_geoms(return_dict=True)
+
+    coils = df_raw.query(f'(z < {end_z_selected}) and (z >= {start_z_selected})')
+    bars = df_bars.query(f'(z0 < {end_z_selected}) and (z0 >= {start_z_selected})')
+    num_first = coils["Coil_Num"].iloc[0]
+    num_last = coils["Coil_Num"].iloc[-1]
+
+    cyl2 = go.Figure()
+    index = bars.index
+    idx = index.tolist()
+    print(bars)
+    print(idx)
+    print(type(idx[0]))
+    print(bars.columns)
+    for num in range(num_first, num_last+1):
+        x, y, z = get_thick_cylinder_surface_xyz(coils, num)
+
+        cyl2.add_traces(data=go.Surface(x=x, y=y, z=z,
+                                        surfacecolor=np.ones_like(x),
+                                       colorscale=[[0, 'rgba(0,0,0,0)'],[1, 'rgba(100, 107, 303,1)']],
+                                       showscale=False,
+                                       showlegend=False,
+                                       name='Coils (radial center)',
+                                       ))
+    for i in idx:
+        xc, yc, zc = create_bar_endpoints(df_bars, i)
+        cond = df_bars['cond N'].iloc[i]
+        cyl2.add_traces(
+              data = go.Mesh3d(x=xc,y=yc,z=zc, alphahull = 0, intensity = np.linspace(1, 1, 8, endpoint=True),
+                               name = f'{cond}', color= 'rgb(255, 92, 92)')
+        )
+
+        
+        z_start = df_bars['z0'].iloc[i]
+        z_end = df_bars['z0'].iloc[i] + df_bars['length'].iloc[i]
+        z_values = np.arange(z_start, z_end)
+
+        num = len(z_values)
+        x_values = [df_bars['x0'].iloc[i]] * num
+        y_values = [df_bars['y0'].iloc[i]] * num
+        cond = df_bars['cond N'].iloc[i]
+        cyl2.add_traces(data=go.Scatter3d(
+            x=x_values, y=y_values, z=z_values,
+            marker=dict(
+                size=4,
+                color='green',
+                    # colorscale='Viridis',
+            ),
+            line=dict(
+                color='darkblue',
+                width=2
+            ),
+            name = f'{cond}',
+        ))
+        
+    cyl2.update_layout(title= f'DS Coils and Longitudinal Bars from Z range {start_z_selected} to {end_z_selected}',
+                       legend_title_text='Conductor Number',
+                       showlegend = True,
+                       scene=dict(aspectmode='data', camera=camera),
+                       autosize=False, width=1500, height=800
+                      )
+    return cyl2
+'''
+...
